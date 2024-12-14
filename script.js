@@ -5,34 +5,44 @@ const endpoint = "https://data.gov.bh/api/explore/v2.1/catalog/datasets/01-stati
 async function fetchData(params) {
     try {
         const response = await fetch(endpoint);
-        if(!response.ok){
-            throw new Error ('Failed to fetch data: ${response.statusText}');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
+
+        // Check if the response content type is JSON
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Received non-JSON response");
+        }
+
         // Parse the JSON response
         const data = await response.json();
-        populataTable(data.records);
-    } catch(error){
+        populateTable(data.results);
+    } catch (error) {
         console.error(error);
     }
 }
 
 // Function to populate the HTML table with data
-function populataTable(records){
+function populateTable(records) {
     const tableBody = document.querySelector("#dataTable tbody");
     tableBody.innerHTML = ""; // clear existing data in the table
 
     records.forEach(record => {
-        const {Year, Semester, The_Programs, Nationality, Colleges, Number_of_Students} = record.record.fields;
+        // Log each record to check its structure
+        console.log(record);
+
+        // Destructure the fields from the record
+        const { year, semester, the_programs, nationality, colleges, number_of_students } = record;
         const row = 
-            <tr>
-                <td>${Year || "N/A"}</td>
-                <td>${Semester || "N/A"}</td>
-                <td>${The_Programs || "N/A"}</td>
-                <td>${Nationality || "N/A"}</td>
-                <td>${Colleges || "N/A"}</td>
-                <td>${Number_of_Students || "N/A"}</td>
-            </tr>
-        ;
+            `<tr>
+                <td>${year || "N/A"}</td>
+                <td>${semester || "N/A"}</td>
+                <td>${the_programs || "N/A"}</td>
+                <td>${nationality || "N/A"}</td>
+                <td>${colleges || "N/A"}</td>
+                <td>${number_of_students || "N/A"}</td>
+            </tr>`;
         tableBody.insertAdjacentHTML("beforeend", row);
     });
 }
